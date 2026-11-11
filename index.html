@@ -1,1 +1,135 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>メダカ育種ラボ</title>
+<style>
+:root{color-scheme:dark;--bg:#101923;--panel:#1b2936;--line:#3a5264;--accent:#79d4c5;--muted:#afc0cc}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0c1720,#1b303d);color:#edf5f7;font-family:system-ui,sans-serif}
+main{max-width:1180px;width:95%;margin:24px auto}h1{margin:0 0 5px;font-size:30px}.sub{color:var(--muted);margin:0 0 18px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tab{width:auto;padding:9px 14px;background:#172631}.tab.active{background:#286e65;border-color:#63bcae}
+.panel{background:#1b2936;border:1px solid var(--line);border-radius:14px;padding:16px}.grid{display:grid;grid-template-columns:310px 1fr;gap:15px}
+.controls{display:grid;gap:11px;align-content:start}label{display:grid;gap:5px;font-size:13px;color:#dce8ed}
+select,input[type=range],input[type=text]{width:100%}select,input[type=text]{background:#101c27;color:#f4f8f9;border:1px solid #496174;border-radius:8px;padding:9px;font:inherit}
+input[type=range]{accent-color:#79d4c5}button{background:#24685f;border:1px solid #398f82;color:white;border-radius:9px;padding:10px 12px;font:inherit;font-weight:650;cursor:pointer}button:hover{background:#2b8175}button.secondary{background:#263847;border-color:#506779}button.danger{background:#713b42;border-color:#99525a}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns button{flex:1}
+.preview{min-height:410px;background:radial-gradient(ellipse at center,#315968,#142b37 72%);display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+canvas{width:100%;height:auto;display:block}.fishname{text-align:center;font-size:23px;font-weight:750;margin:3px 0}.desc{text-align:center;color:var(--muted);font-size:13px;margin:0 0 10px}
+.tags{display:flex;justify-content:center;flex-wrap:wrap;gap:6px}.tag{border:1px solid #547080;background:#1a3542;border-radius:30px;padding:4px 9px;font-size:12px}
+.section{margin-top:15px}.section h2{font-size:18px;margin:0 0 10px}.hidden{display:none!important}
+.collection{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.fishcard{background:#142530;border:1px solid #40596b;border-radius:11px;padding:9px}.fishcard canvas{background:#1b3b48;border-radius:7px}.fishcard strong{display:block;margin:6px 0;font-size:14px}.fishcard small{color:var(--muted)}
+.breedgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.offspring{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:12px}
+.note{font-size:12px;color:#a9bbc7;line-height:1.65}.rangeval{color:var(--accent);font-variant-numeric:tabular-nums}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.preview{min-height:300px}.breedgrid{grid-template-columns:1fr}h1{font-size:25px}}
+</style></head>
+<body><main>
+<h1>メダカ育種ラボ</h1><p class="sub">体形・色柄・ヒレを設計し、保存・交配してオリジナルメダカを作るシミュレーター</p>
+<div class="tabs">
+<button class="tab active" data-tab="design">① デザイン</button><button class="tab" data-tab="breed">② 交配シミュレーション</button><button class="tab" data-tab="collection">③ コレクション</button>
+</div>
+<div id="design" class="grid">
+<section class="panel controls">
+<label>名前<input id="fishNameInput" type="text" maxlength="30" value="オリジナルメダカ"></label>
+<label>体形<select id="body"><option value="normal">普通体形</option><option value="daruma">ダルマ体形</option><option value="semi">半ダルマ体形</option><option value="slim">細身・ロングボディ</option><option value="short">ショートボディ</option></select></label>
+<label>尾びれ<select id="tail"><option value="normal">普通</option><option value="long">ロングフィン</option><option value="fan">大きな扇形</option><option value="lyre">ライヤー風</option><option value="round">丸尾</option></select></label>
+<label>背びれ・尻びれ<select id="fins"><option value="normal">普通</option><option value="long">ヒレ長</option><option value="sail">大きな帆状</option><option value="none">小さめ</option></select></label>
+<label>体色<select id="base"><option value="white">白</option><option value="orange">朱赤</option><option value="black">黒</option><option value="blue">青・青白</option><option value="gold">黄金</option><option value="silver">銀</option></select></label>
+<label>模様<select id="pattern"><option value="none">単色</option><option value="sanshoku">三色（赤・黒・白）</option><option value="kohaku">紅白</option><option value="spots">斑・スポット</option><option value="ラメ">ラメ</option><option value="metal">体外光・金属光沢</option></select></label>
+<label>赤色の量 <span class="rangeval" id="redVal">45%</span><input id="red" type="range" min="0" max="100" value="45"></label>
+<label>黒色の量 <span class="rangeval" id="blackVal">35%</span><input id="black" type="range" min="0" max="100" value="35"></label>
+<label>模様の位置 <span class="rangeval" id="positionVal">中央</span><input id="position" type="range" min="0" max="100" value="50"></label>
+<label>ラメの量 <span class="rangeval" id="glitterVal">35%</span><input id="glitter" type="range" min="0" max="100" value="35"></label>
+<label>体外光の強さ <span class="rangeval" id="shineVal">30%</span><input id="shine" type="range" min="0" max="100" value="30"></label>
+<label>目<select id="eyes"><option value="normal">普通目</option><option value="black">黒目</option><option value="blue">青目風</option><option value="red">赤目風</option></select></label>
+<label>ヒレ色<select id="finColor"><option value="same">体色に近い</option><option value="clear">透明</option><option value="red">赤</option><option value="black">黒</option><option value="blue">青</option></select></label>
+<div class="btns"><button id="random">ランダム生成</button><button id="reset" class="secondary">初期設定</button></div>
+<div class="btns"><button id="save">このメダカを保存</button><button id="export" class="secondary">画像を保存</button></div>
+<p class="note">色の面積・位置・光の強さを調整できます。画像はイラスト表現です。実際の遺伝や品種の固定率を保証するものではありません。</p>
+</section>
+<section class="panel preview"><canvas id="mainFish" width="900" height="480"></canvas><div class="fishname" id="displayName">オリジナルメダカ</div><p class="desc" id="description"></p><div class="tags" id="tags"></div></section>
+</div>
+<div id="breed" class="panel hidden section">
+<h2>親魚を選んで交配</h2><p class="note">保存した魚を親に指定すると、親の形質を一定確率で受け継ぐ子供を生成します。簡易的なゲーム用遺伝モデルです。</p>
+<div class="breedgrid"><label>父親<select id="father"></select></label><label>母親<select id="mother"></select></label></div>
+<div class="btns section"><button id="breedBtn">子供を5匹生成</button><button id="breed10" class="secondary">子供を10匹生成</button></div>
+<div id="offspring" class="offspring"></div>
+</div>
+<div id="collection" class="panel hidden section">
+<div class="btns" style="justify-content:space-between"><h2 style="margin:7px 0">保存したメダカ</h2><button id="clear" class="danger">全削除</button></div>
+<div id="collectionList" class="collection"></div><p class="note">保存データはこのブラウザ内に保存されます。同じ端末・ブラウザで開くと続きから遊べます。</p>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const defaults={name:"オリジナルメダカ",body:"normal",tail:"normal",fins:"normal",base:"white",pattern:"sanshoku",red:45,black:35,position:50,glitter:35,shine:30,eyes:"normal",finColor:"same"};
+const palette={white:["#fff8e9","#c8c8bd"],orange:["#ff9b45","#bd4d24"],black:["#59616a","#171e28"],blue:["#b9e8f5","#477caa"],gold:["#ffe08a","#b98227"],silver:["#f1f4f4","#8cabb7"]};
+const finPalette={same:null,clear:["#dff9f5","#9ccbd2"],red:["#e65b4e","#8d2730"],black:["#4b4c58","#151923"],blue:["#77c5ed","#315c9a"]};
+const labelMap={body:{normal:"普通体形",daruma:"ダルマ",semi:"半ダルマ",slim:"細身",short:"ショート"},tail:{normal:"普通尾",long:"ロングフィン",fan:"扇形尾",lyre:"ライヤー風",round:"丸尾"},fins:{normal:"普通ヒレ",long:"ヒレ長",sail:"帆状ヒレ",none:"小さなヒレ"},base:{white:"白",orange:"朱赤",black:"黒",blue:"青白",gold:"黄金",silver:"銀"},pattern:{none:"単色",sanshoku:"三色",kohaku:"紅白",spots:"斑模様",ラメ:"ラメ",metal:"体外光"},eyes:{normal:"普通目",black:"黒目",blue:"青目風",red:"赤目風"}};
+let current={...defaults}, collection=loadCollection();
+function loadCollection(){try{return JSON.parse(localStorage.getItem("medakaLabCollection")||"[]")}catch(e){return []}}
+function persist(){localStorage.setItem("medakaLabCollection",JSON.stringify(collection))}
+function getSettings(){const o={};Object.keys(defaults).forEach(k=>{if($(k))o[k]=["red","black","position","glitter","shine"].includes(k)?Number($(k).value):$(k).value});return o}
+function applySettings(o){current={...defaults,...o};Object.keys(current).forEach(k=>{if($(k))$(k).value=current[k]});render()}
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function fishPath(s){let body={normal:[180,215,625,215,480,135,480,295],daruma:[180,215,625,215,475,95,475,335],semi:[180,215,625,215,480,115,480,315],slim:[180,215,625,215,485,175,485,255],short:[205,215,590,215,465,105,465,325]}[s.body]||[180,215,625,215,480,135,480,295];return `M${body[0]} ${body[1]} C${body[4]} ${body[6]} ${body[2]-90} ${body[6]} ${body[2]} ${body[3]} C${body[2]-90} ${body[7]} ${body[4]} ${body[7]} ${body[0]} ${body[1]}Z`}
+function drawFish(canvas,s,small=false){
+ const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);
+ const scale=Math.min(w/900,h/480);ctx.save();ctx.translate((w-900*scale)/2,(h-480*scale)/2);ctx.scale(scale,scale);
+ const bg=ctx.createRadialGradient(450,230,30,450,230,470);bg.addColorStop(0,"#376575");bg.addColorStop(1,"#102633");ctx.fillStyle=bg;ctx.fillRect(0,0,900,480);
+ for(let i=0;i<9;i++){ctx.strokeStyle="rgba(190,235,235,.10)";ctx.beginPath();ctx.ellipse(100+i*90,80+(i%3)*130,30,5,0,0,Math.PI*2);ctx.stroke()}
+ const body=fishPath(s), bodyColors=palette[s.base]||palette.white;
+ const fin=finPalette[s.finColor]||bodyColors;
+ // tail shapes
+ ctx.save();ctx.translate(625,240);ctx.fillStyle=fin[0];ctx.strokeStyle="rgba(235,248,245,.75)";ctx.lineWidth=3;
+ ctx.beginPath();
+ if(s.tail==="long"){ctx.moveTo(0,0);ctx.bezierCurveTo(85,-130,180,-165,260,-135);ctx.bezierCurveTo(220,-35,225,35,260,135);ctx.bezierCurveTo(165,160,85,115,0,0)}
+ else if(s.tail==="fan"){ctx.moveTo(0,0);ctx.bezierCurveTo(75,-110,170,-130,210,-100);ctx.quadraticCurveTo(180,0,210,100);ctx.bezierCurveTo(140,130,70,100,0,0)}
+ else if(s.tail==="lyre"){ctx.moveTo(0,0);ctx.bezierCurveTo(70,-135,170,-145,205,-125);ctx.quadraticCurveTo(150,-15,220,120);ctx.quadraticCurveTo(120,90,0,0)}
+ else if(s.tail==="round"){ctx.moveTo(0,0);ctx.bezierCurveTo(65,-75,150,-75,170,0);ctx.bezierCurveTo(150,75,65,75,0,0)}
+ else{ctx.moveTo(0,0);ctx.quadraticCurveTo(80,-85,145,-55);ctx.quadraticCurveTo(125,0,145,55);ctx.quadraticCurveTo(80,85,0,0)}
+ ctx.closePath();ctx.fill();ctx.stroke();for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(145, i*17);ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=2;ctx.stroke()}ctx.restore();
+ // fins
+ ctx.fillStyle=fin[0];ctx.strokeStyle="rgba(235,248,245,.65)";ctx.lineWidth=3;
+ ctx.beginPath();if(s.fins==="long")ctx.moveTo(320,155),ctx.quadraticCurveTo(390,15,500,145),ctx.lineTo(320,155);else if(s.fins==="sail")ctx.moveTo(300,155),ctx.quadraticCurveTo(390,20,520,150),ctx.lineTo(300,155);else if(s.fins==="none")ctx.moveTo(340,155),ctx.quadraticCurveTo(390,125,445,150),ctx.lineTo(340,155);else ctx.moveTo(330,155),ctx.quadraticCurveTo(390,85,470,150),ctx.lineTo(330,155);ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.moveTo(345,292);ctx.quadraticCurveTo(400,s.fins==="long"?420:s.fins==="sail"?390:350,505,285);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.moveTo(300,235);ctx.quadraticCurveTo(255,310,340,300);ctx.quadraticCurveTo(370,270,380,225);ctx.fill();ctx.stroke();
+ // body gradient
+ ctx.save();ctx.beginPath();ctx.moveTo(180,240);ctx.bezierCurveTo(265,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,500,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,625,240);ctx.bezierCurveTo(500,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,265,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,180,240);ctx.closePath();ctx.clip();
+ const grad=ctx.createLinearGradient(0,120,0,360);grad.addColorStop(0,bodyColors[0]);grad.addColorStop(1,bodyColors[1]);ctx.fillStyle=grad;ctx.fillRect(150,80,500,340);
+ // pattern layers with adjustable area and position
+ const pos=260+(s.position/100)*240,red=s.red/100,black=s.black/100;
+ if(s.pattern==="sanshoku"||s.pattern==="kohaku"){
+   if(s.pattern==="sanshoku"&&black>0){ctx.fillStyle="#15191d";ctx.globalAlpha=.9;ctx.beginPath();ctx.ellipse(pos-85,230,65+black*55,100, -.2,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(pos+120,245,45+black*45,85,.25,0,7);ctx.fill();ctx.globalAlpha=1}
+   if(red>0){ctx.fillStyle="#e64b32";ctx.globalAlpha=.95;ctx.beginPath();ctx.ellipse(pos+35,210,40+red*70,90,.12,0,7);ctx.fill();ctx.globalAlpha=1}
+ }
+ if(s.pattern==="spots"){ctx.fillStyle="#14181c";for(let i=0;i<Math.max(2,Math.round(3+black/10));i++){ctx.beginPath();ctx.ellipse(250+i*58,190+(i%2)*70,10+black/4,14+black/4,i*.3,0,7);ctx.fill()}}
+ if(s.pattern==="metal"){const sh=ctx.createLinearGradient(210,180,590,260);sh.addColorStop(0,"rgba(255,255,255,0)");sh.addColorStop(.45,`rgba(220,255,255,${s.shine/100})`);sh.addColorStop(.6,`rgba(255,255,255,${s.shine/100})`);sh.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=sh;ctx.fillRect(170,130,470,220)}
+ if(s.pattern==="ラメ"){for(let i=0;i<s.glitter*1.15;i++){let x=205+(i*67%390),y=160+(i*43%155);ctx.fillStyle=`rgba(255,250,205,${.3+Math.random()*.6})`;ctx.beginPath();ctx.arc(x,y,1.5+(i%4)*.5,0,7);ctx.fill()}}
+ // body gloss
+ const gloss=ctx.createLinearGradient(0,140,0,230);gloss.addColorStop(0,"rgba(255,255,255,.42)");gloss.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=gloss;ctx.fillRect(170,130,470,110);
+ ctx.restore();
+ // outline, eye, gill, scales
+ ctx.strokeStyle="rgba(240,247,235,.8)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(180,240);ctx.bezierCurveTo(265,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,500,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,625,240);ctx.bezierCurveTo(500,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,265,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,180,240);ctx.stroke();
+ ctx.strokeStyle="rgba(60,80,85,.45)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(255,240,48,-.9,.9);ctx.stroke();
+ for(let i=0;i<5;i++){ctx.strokeStyle="rgba(255,255,255,.16)";ctx.beginPath();ctx.arc(300+i*45,220,28,-.5,.6);ctx.stroke()}
+ const eye=s.eyes==="red"?"#c52e36":s.eyes==="blue"?"#459ac5":"#10151a";ctx.fillStyle=eye;ctx.beginPath();ctx.arc(215,220,s.eyes==="black"?12:9,0,7);ctx.fill();ctx.strokeStyle="#f6f0dc";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(212,217,3,0,7);ctx.fill();
+ ctx.restore();
+}
+function render(){current=getSettings();$("redVal").textContent=current.red+"%";$("blackVal").textContent=current.black+"%";$("positionVal").textContent=current.position<35?"前方":current.position>65?"後方":"中央";$("glitterVal").textContent=current.glitter+"%";$("shineVal").textContent=current.shine+"%";$("displayName").textContent=current.name;$("description").textContent=[labelMap.body[current.body],labelMap.tail[current.tail],labelMap.fins[current.fins],labelMap.base[current.base],labelMap.pattern[current.pattern]].join("・");$("tags").innerHTML=[labelMap.body[current.body],labelMap.tail[current.tail],labelMap.fins[current.fins],labelMap.pattern[current.pattern]].map(x=>`<span class="tag">${x}</span>`).join("");drawFish($("mainFish"),current)}
+function makeCard(s,parent){const card=document.createElement("div");card.className="fishcard";const c=document.createElement("canvas");c.width=450;c.height=240;drawFish(c,s,true);const title=document.createElement("strong");title.textContent=s.name;const small=document.createElement("small");small.textContent=[labelMap.body[s.body],labelMap.base[s.base],labelMap.pattern[s.pattern]].join("・");card.append(c,title,small);if(parent){const row=document.createElement("div");row.className="btns";const use=document.createElement("button");use.textContent="編集する";use.onclick=()=>{applySettings(s);switchTab("design")};const del=document.createElement("button");del.className="danger";del.textContent="削除";del.onclick=()=>{collection=collection.filter(x=>x.id!==s.id);persist();refreshAll()};row.append(use,del);card.append(row)}return card}
+function refreshAll(){const list=$("collectionList");list.innerHTML="";collection.forEach(s=>list.append(makeCard(s,true)));if(!collection.length)list.textContent="まだ保存されたメダカはいません。デザイン画面で「このメダカを保存」を押してください。";["father","mother"].forEach(id=>{const sel=$(id),old=sel.value;sel.innerHTML="";collection.forEach(s=>{const o=document.createElement("option");o.value=s.id;o.textContent=s.name;sel.append(o)});if(collection.some(s=>s.id===old))sel.value=old});}
+function switchTab(id){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));["design","breed","collection"].forEach(x=>$(x).classList.toggle("hidden",x!==id));if(id==="collection"||id==="breed")refreshAll()}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+["body","tail","fins","base","pattern","red","black","position","glitter","shine","eyes","finColor","fishNameInput"].forEach(id=>$(id).addEventListener("input",()=>{current=getSettings();render()}));
+$("save").onclick=()=>{const s={...getSettings(),id:Date.now()+Math.random()};collection.push(s);persist();refreshAll();$("save").textContent="保存しました";setTimeout(()=>$("save").textContent="このメダカを保存",1200)};
+$("random").onclick=()=>{["body","tail","fins","base","pattern","eyes","finColor"].forEach(id=>{$(id).selectedIndex=Math.floor(Math.random()*$(id).options.length)});["red","black","position","glitter","shine"].forEach(id=>$(id).value=Math.floor(Math.random()*101));render()};
+$("reset").onclick=()=>applySettings(defaults);
+$("export").onclick=()=>{const a=document.createElement("a");a.download=(current.name||"medaka")+".png";a.href=$("mainFish").toDataURL("image/png");a.click()};
+function inherit(a,b,key){return Math.random()<.5?a[key]:b[key]}
+function childOf(a,b,i){let c={...defaults};["body","tail","fins","base","pattern","eyes","finColor"].forEach(k=>c[k]=inherit(a,b,k));["red","black","position","glitter","shine"].forEach(k=>{let avg=(Number(a[k])+Number(b[k]))/2;c[k]=Math.max(0,Math.min(100,Math.round(avg+(Math.random()-.5)*30)))});c.name=`F1-${String(i+1).padStart(2,"0")}`;c.id=Date.now()+Math.random();return c}
+function breed(n){const a=collection.find(x=>String(x.id)===$("father").value),b=collection.find(x=>String(x.id)===$("mother").value);if(!a||!b){alert("先にコレクションへ親魚を2匹保存してください。");return}const out=$("offspring");out.innerHTML="";for(let i=0;i<n;i++){const c=childOf(a,b,i);const card=makeCard(c,false),save=document.createElement("button");save.textContent="子供を保存";save.style.marginTop="7px";save.onclick=()=>{collection.push(c);persist();refreshAll();save.textContent="保存済み";save.disabled=true};card.append(save);out.append(card)}}
+$("breedBtn").onclick=()=>breed(5);$("breed10").onclick=()=>breed(10);
+$("clear").onclick=()=>{if(confirm("保存したメダカをすべて削除しますか？")){collection=[];persist();refreshAll()}};
+applySettings(defaults);refreshAll();
+</script></body></html>
