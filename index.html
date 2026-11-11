@@ -606,3 +606,28 @@
             updateEncyclopediaUI();
             showToast('図鑑を初期化しました');
         }
+
+        function openEncyclopedia() {
+            updateEncyclopediaUI();
+            const modal = document.getElementById('modal-encyclopedia');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeEncyclopedia() {
+            const modal = document.getElementById('modal-encyclopedia');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
