@@ -1,135 +1,608 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>メダカ育種ラボ</title>
-<style>
-:root{color-scheme:dark;--bg:#101923;--panel:#1b2936;--line:#3a5264;--accent:#79d4c5;--muted:#afc0cc}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0c1720,#1b303d);color:#edf5f7;font-family:system-ui,sans-serif}
-main{max-width:1180px;width:95%;margin:24px auto}h1{margin:0 0 5px;font-size:30px}.sub{color:var(--muted);margin:0 0 18px}
-.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tab{width:auto;padding:9px 14px;background:#172631}.tab.active{background:#286e65;border-color:#63bcae}
-.panel{background:#1b2936;border:1px solid var(--line);border-radius:14px;padding:16px}.grid{display:grid;grid-template-columns:310px 1fr;gap:15px}
-.controls{display:grid;gap:11px;align-content:start}label{display:grid;gap:5px;font-size:13px;color:#dce8ed}
-select,input[type=range],input[type=text]{width:100%}select,input[type=text]{background:#101c27;color:#f4f8f9;border:1px solid #496174;border-radius:8px;padding:9px;font:inherit}
-input[type=range]{accent-color:#79d4c5}button{background:#24685f;border:1px solid #398f82;color:white;border-radius:9px;padding:10px 12px;font:inherit;font-weight:650;cursor:pointer}button:hover{background:#2b8175}button.secondary{background:#263847;border-color:#506779}button.danger{background:#713b42;border-color:#99525a}
-.btns{display:flex;gap:8px;flex-wrap:wrap}.btns button{flex:1}
-.preview{min-height:410px;background:radial-gradient(ellipse at center,#315968,#142b37 72%);display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-canvas{width:100%;height:auto;display:block}.fishname{text-align:center;font-size:23px;font-weight:750;margin:3px 0}.desc{text-align:center;color:var(--muted);font-size:13px;margin:0 0 10px}
-.tags{display:flex;justify-content:center;flex-wrap:wrap;gap:6px}.tag{border:1px solid #547080;background:#1a3542;border-radius:30px;padding:4px 9px;font-size:12px}
-.section{margin-top:15px}.section h2{font-size:18px;margin:0 0 10px}.hidden{display:none!important}
-.collection{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.fishcard{background:#142530;border:1px solid #40596b;border-radius:11px;padding:9px}.fishcard canvas{background:#1b3b48;border-radius:7px}.fishcard strong{display:block;margin:6px 0;font-size:14px}.fishcard small{color:var(--muted)}
-.breedgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.offspring{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:12px}
-.note{font-size:12px;color:#a9bbc7;line-height:1.65}.rangeval{color:var(--accent);font-variant-numeric:tabular-nums}
-@media(max-width:760px){.grid{grid-template-columns:1fr}.preview{min-height:300px}.breedgrid{grid-template-columns:1fr}h1{font-size:25px}}
-</style></head>
-<body><main>
-<h1>メダカ育種ラボ</h1><p class="sub">体形・色柄・ヒレを設計し、保存・交配してオリジナルメダカを作るシミュレーター</p>
-<div class="tabs">
-<button class="tab active" data-tab="design">① デザイン</button><button class="tab" data-tab="breed">② 交配シミュレーション</button><button class="tab" data-tab="collection">③ コレクション</button>
-</div>
-<div id="design" class="grid">
-<section class="panel controls">
-<label>名前<input id="fishNameInput" type="text" maxlength="30" value="オリジナルメダカ"></label>
-<label>体形<select id="body"><option value="normal">普通体形</option><option value="daruma">ダルマ体形</option><option value="semi">半ダルマ体形</option><option value="slim">細身・ロングボディ</option><option value="short">ショートボディ</option></select></label>
-<label>尾びれ<select id="tail"><option value="normal">普通</option><option value="long">ロングフィン</option><option value="fan">大きな扇形</option><option value="lyre">ライヤー風</option><option value="round">丸尾</option></select></label>
-<label>背びれ・尻びれ<select id="fins"><option value="normal">普通</option><option value="long">ヒレ長</option><option value="sail">大きな帆状</option><option value="none">小さめ</option></select></label>
-<label>体色<select id="base"><option value="white">白</option><option value="orange">朱赤</option><option value="black">黒</option><option value="blue">青・青白</option><option value="gold">黄金</option><option value="silver">銀</option></select></label>
-<label>模様<select id="pattern"><option value="none">単色</option><option value="sanshoku">三色（赤・黒・白）</option><option value="kohaku">紅白</option><option value="spots">斑・スポット</option><option value="ラメ">ラメ</option><option value="metal">体外光・金属光沢</option></select></label>
-<label>赤色の量 <span class="rangeval" id="redVal">45%</span><input id="red" type="range" min="0" max="100" value="45"></label>
-<label>黒色の量 <span class="rangeval" id="blackVal">35%</span><input id="black" type="range" min="0" max="100" value="35"></label>
-<label>模様の位置 <span class="rangeval" id="positionVal">中央</span><input id="position" type="range" min="0" max="100" value="50"></label>
-<label>ラメの量 <span class="rangeval" id="glitterVal">35%</span><input id="glitter" type="range" min="0" max="100" value="35"></label>
-<label>体外光の強さ <span class="rangeval" id="shineVal">30%</span><input id="shine" type="range" min="0" max="100" value="30"></label>
-<label>目<select id="eyes"><option value="normal">普通目</option><option value="black">黒目</option><option value="blue">青目風</option><option value="red">赤目風</option></select></label>
-<label>ヒレ色<select id="finColor"><option value="same">体色に近い</option><option value="clear">透明</option><option value="red">赤</option><option value="black">黒</option><option value="blue">青</option></select></label>
-<div class="btns"><button id="random">ランダム生成</button><button id="reset" class="secondary">初期設定</button></div>
-<div class="btns"><button id="save">このメダカを保存</button><button id="export" class="secondary">画像を保存</button></div>
-<p class="note">色の面積・位置・光の強さを調整できます。画像はイラスト表現です。実際の遺伝や品種の固定率を保証するものではありません。</p>
-</section>
-<section class="panel preview"><canvas id="mainFish" width="900" height="480"></canvas><div class="fishname" id="displayName">オリジナルメダカ</div><p class="desc" id="description"></p><div class="tags" id="tags"></div></section>
-</div>
-<div id="breed" class="panel hidden section">
-<h2>親魚を選んで交配</h2><p class="note">保存した魚を親に指定すると、親の形質を一定確率で受け継ぐ子供を生成します。簡易的なゲーム用遺伝モデルです。</p>
-<div class="breedgrid"><label>父親<select id="father"></select></label><label>母親<select id="mother"></select></label></div>
-<div class="btns section"><button id="breedBtn">子供を5匹生成</button><button id="breed10" class="secondary">子供を10匹生成</button></div>
-<div id="offspring" class="offspring"></div>
-</div>
-<div id="collection" class="panel hidden section">
-<div class="btns" style="justify-content:space-between"><h2 style="margin:7px 0">保存したメダカ</h2><button id="clear" class="danger">全削除</button></div>
-<div id="collectionList" class="collection"></div><p class="note">保存データはこのブラウザ内に保存されます。同じ端末・ブラウザで開くと続きから遊べます。</p>
-</div>
-</main>
-<script>
-const $=id=>document.getElementById(id);
-const defaults={name:"オリジナルメダカ",body:"normal",tail:"normal",fins:"normal",base:"white",pattern:"sanshoku",red:45,black:35,position:50,glitter:35,shine:30,eyes:"normal",finColor:"same"};
-const palette={white:["#fff8e9","#c8c8bd"],orange:["#ff9b45","#bd4d24"],black:["#59616a","#171e28"],blue:["#b9e8f5","#477caa"],gold:["#ffe08a","#b98227"],silver:["#f1f4f4","#8cabb7"]};
-const finPalette={same:null,clear:["#dff9f5","#9ccbd2"],red:["#e65b4e","#8d2730"],black:["#4b4c58","#151923"],blue:["#77c5ed","#315c9a"]};
-const labelMap={body:{normal:"普通体形",daruma:"ダルマ",semi:"半ダルマ",slim:"細身",short:"ショート"},tail:{normal:"普通尾",long:"ロングフィン",fan:"扇形尾",lyre:"ライヤー風",round:"丸尾"},fins:{normal:"普通ヒレ",long:"ヒレ長",sail:"帆状ヒレ",none:"小さなヒレ"},base:{white:"白",orange:"朱赤",black:"黒",blue:"青白",gold:"黄金",silver:"銀"},pattern:{none:"単色",sanshoku:"三色",kohaku:"紅白",spots:"斑模様",ラメ:"ラメ",metal:"体外光"},eyes:{normal:"普通目",black:"黒目",blue:"青目風",red:"赤目風"}};
-let current={...defaults}, collection=loadCollection();
-function loadCollection(){try{return JSON.parse(localStorage.getItem("medakaLabCollection")||"[]")}catch(e){return []}}
-function persist(){localStorage.setItem("medakaLabCollection",JSON.stringify(collection))}
-function getSettings(){const o={};Object.keys(defaults).forEach(k=>{if($(k))o[k]=["red","black","position","glitter","shine"].includes(k)?Number($(k).value):$(k).value});return o}
-function applySettings(o){current={...defaults,...o};Object.keys(current).forEach(k=>{if($(k))$(k).value=current[k]});render()}
-function rand(a){return a[Math.floor(Math.random()*a.length)]}
-function fishPath(s){let body={normal:[180,215,625,215,480,135,480,295],daruma:[180,215,625,215,475,95,475,335],semi:[180,215,625,215,480,115,480,315],slim:[180,215,625,215,485,175,485,255],short:[205,215,590,215,465,105,465,325]}[s.body]||[180,215,625,215,480,135,480,295];return `M${body[0]} ${body[1]} C${body[4]} ${body[6]} ${body[2]-90} ${body[6]} ${body[2]} ${body[3]} C${body[2]-90} ${body[7]} ${body[4]} ${body[7]} ${body[0]} ${body[1]}Z`}
-function drawFish(canvas,s,small=false){
- const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);
- const scale=Math.min(w/900,h/480);ctx.save();ctx.translate((w-900*scale)/2,(h-480*scale)/2);ctx.scale(scale,scale);
- const bg=ctx.createRadialGradient(450,230,30,450,230,470);bg.addColorStop(0,"#376575");bg.addColorStop(1,"#102633");ctx.fillStyle=bg;ctx.fillRect(0,0,900,480);
- for(let i=0;i<9;i++){ctx.strokeStyle="rgba(190,235,235,.10)";ctx.beginPath();ctx.ellipse(100+i*90,80+(i%3)*130,30,5,0,0,Math.PI*2);ctx.stroke()}
- const body=fishPath(s), bodyColors=palette[s.base]||palette.white;
- const fin=finPalette[s.finColor]||bodyColors;
- // tail shapes
- ctx.save();ctx.translate(625,240);ctx.fillStyle=fin[0];ctx.strokeStyle="rgba(235,248,245,.75)";ctx.lineWidth=3;
- ctx.beginPath();
- if(s.tail==="long"){ctx.moveTo(0,0);ctx.bezierCurveTo(85,-130,180,-165,260,-135);ctx.bezierCurveTo(220,-35,225,35,260,135);ctx.bezierCurveTo(165,160,85,115,0,0)}
- else if(s.tail==="fan"){ctx.moveTo(0,0);ctx.bezierCurveTo(75,-110,170,-130,210,-100);ctx.quadraticCurveTo(180,0,210,100);ctx.bezierCurveTo(140,130,70,100,0,0)}
- else if(s.tail==="lyre"){ctx.moveTo(0,0);ctx.bezierCurveTo(70,-135,170,-145,205,-125);ctx.quadraticCurveTo(150,-15,220,120);ctx.quadraticCurveTo(120,90,0,0)}
- else if(s.tail==="round"){ctx.moveTo(0,0);ctx.bezierCurveTo(65,-75,150,-75,170,0);ctx.bezierCurveTo(150,75,65,75,0,0)}
- else{ctx.moveTo(0,0);ctx.quadraticCurveTo(80,-85,145,-55);ctx.quadraticCurveTo(125,0,145,55);ctx.quadraticCurveTo(80,85,0,0)}
- ctx.closePath();ctx.fill();ctx.stroke();for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(145, i*17);ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=2;ctx.stroke()}ctx.restore();
- // fins
- ctx.fillStyle=fin[0];ctx.strokeStyle="rgba(235,248,245,.65)";ctx.lineWidth=3;
- ctx.beginPath();if(s.fins==="long")ctx.moveTo(320,155),ctx.quadraticCurveTo(390,15,500,145),ctx.lineTo(320,155);else if(s.fins==="sail")ctx.moveTo(300,155),ctx.quadraticCurveTo(390,20,520,150),ctx.lineTo(300,155);else if(s.fins==="none")ctx.moveTo(340,155),ctx.quadraticCurveTo(390,125,445,150),ctx.lineTo(340,155);else ctx.moveTo(330,155),ctx.quadraticCurveTo(390,85,470,150),ctx.lineTo(330,155);ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.moveTo(345,292);ctx.quadraticCurveTo(400,s.fins==="long"?420:s.fins==="sail"?390:350,505,285);ctx.closePath();ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.moveTo(300,235);ctx.quadraticCurveTo(255,310,340,300);ctx.quadraticCurveTo(370,270,380,225);ctx.fill();ctx.stroke();
- // body gradient
- ctx.save();ctx.beginPath();ctx.moveTo(180,240);ctx.bezierCurveTo(265,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,500,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,625,240);ctx.bezierCurveTo(500,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,265,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,180,240);ctx.closePath();ctx.clip();
- const grad=ctx.createLinearGradient(0,120,0,360);grad.addColorStop(0,bodyColors[0]);grad.addColorStop(1,bodyColors[1]);ctx.fillStyle=grad;ctx.fillRect(150,80,500,340);
- // pattern layers with adjustable area and position
- const pos=260+(s.position/100)*240,red=s.red/100,black=s.black/100;
- if(s.pattern==="sanshoku"||s.pattern==="kohaku"){
-   if(s.pattern==="sanshoku"&&black>0){ctx.fillStyle="#15191d";ctx.globalAlpha=.9;ctx.beginPath();ctx.ellipse(pos-85,230,65+black*55,100, -.2,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(pos+120,245,45+black*45,85,.25,0,7);ctx.fill();ctx.globalAlpha=1}
-   if(red>0){ctx.fillStyle="#e64b32";ctx.globalAlpha=.95;ctx.beginPath();ctx.ellipse(pos+35,210,40+red*70,90,.12,0,7);ctx.fill();ctx.globalAlpha=1}
- }
- if(s.pattern==="spots"){ctx.fillStyle="#14181c";for(let i=0;i<Math.max(2,Math.round(3+black/10));i++){ctx.beginPath();ctx.ellipse(250+i*58,190+(i%2)*70,10+black/4,14+black/4,i*.3,0,7);ctx.fill()}}
- if(s.pattern==="metal"){const sh=ctx.createLinearGradient(210,180,590,260);sh.addColorStop(0,"rgba(255,255,255,0)");sh.addColorStop(.45,`rgba(220,255,255,${s.shine/100})`);sh.addColorStop(.6,`rgba(255,255,255,${s.shine/100})`);sh.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=sh;ctx.fillRect(170,130,470,220)}
- if(s.pattern==="ラメ"){for(let i=0;i<s.glitter*1.15;i++){let x=205+(i*67%390),y=160+(i*43%155);ctx.fillStyle=`rgba(255,250,205,${.3+Math.random()*.6})`;ctx.beginPath();ctx.arc(x,y,1.5+(i%4)*.5,0,7);ctx.fill()}}
- // body gloss
- const gloss=ctx.createLinearGradient(0,140,0,230);gloss.addColorStop(0,"rgba(255,255,255,.42)");gloss.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=gloss;ctx.fillRect(170,130,470,110);
- ctx.restore();
- // outline, eye, gill, scales
- ctx.strokeStyle="rgba(240,247,235,.8)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(180,240);ctx.bezierCurveTo(265,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,500,s.body==="daruma"?80:s.body==="semi"?110:s.body==="slim"?180:130,625,240);ctx.bezierCurveTo(500,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,265,s.body==="daruma"?400:s.body==="semi"?370:s.body==="slim"?300:350,180,240);ctx.stroke();
- ctx.strokeStyle="rgba(60,80,85,.45)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(255,240,48,-.9,.9);ctx.stroke();
- for(let i=0;i<5;i++){ctx.strokeStyle="rgba(255,255,255,.16)";ctx.beginPath();ctx.arc(300+i*45,220,28,-.5,.6);ctx.stroke()}
- const eye=s.eyes==="red"?"#c52e36":s.eyes==="blue"?"#459ac5":"#10151a";ctx.fillStyle=eye;ctx.beginPath();ctx.arc(215,220,s.eyes==="black"?12:9,0,7);ctx.fill();ctx.strokeStyle="#f6f0dc";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(212,217,3,0,7);ctx.fill();
- ctx.restore();
-}
-function render(){current=getSettings();$("redVal").textContent=current.red+"%";$("blackVal").textContent=current.black+"%";$("positionVal").textContent=current.position<35?"前方":current.position>65?"後方":"中央";$("glitterVal").textContent=current.glitter+"%";$("shineVal").textContent=current.shine+"%";$("displayName").textContent=current.name;$("description").textContent=[labelMap.body[current.body],labelMap.tail[current.tail],labelMap.fins[current.fins],labelMap.base[current.base],labelMap.pattern[current.pattern]].join("・");$("tags").innerHTML=[labelMap.body[current.body],labelMap.tail[current.tail],labelMap.fins[current.fins],labelMap.pattern[current.pattern]].map(x=>`<span class="tag">${x}</span>`).join("");drawFish($("mainFish"),current)}
-function makeCard(s,parent){const card=document.createElement("div");card.className="fishcard";const c=document.createElement("canvas");c.width=450;c.height=240;drawFish(c,s,true);const title=document.createElement("strong");title.textContent=s.name;const small=document.createElement("small");small.textContent=[labelMap.body[s.body],labelMap.base[s.base],labelMap.pattern[s.pattern]].join("・");card.append(c,title,small);if(parent){const row=document.createElement("div");row.className="btns";const use=document.createElement("button");use.textContent="編集する";use.onclick=()=>{applySettings(s);switchTab("design")};const del=document.createElement("button");del.className="danger";del.textContent="削除";del.onclick=()=>{collection=collection.filter(x=>x.id!==s.id);persist();refreshAll()};row.append(use,del);card.append(row)}return card}
-function refreshAll(){const list=$("collectionList");list.innerHTML="";collection.forEach(s=>list.append(makeCard(s,true)));if(!collection.length)list.textContent="まだ保存されたメダカはいません。デザイン画面で「このメダカを保存」を押してください。";["father","mother"].forEach(id=>{const sel=$(id),old=sel.value;sel.innerHTML="";collection.forEach(s=>{const o=document.createElement("option");o.value=s.id;o.textContent=s.name;sel.append(o)});if(collection.some(s=>s.id===old))sel.value=old});}
-function switchTab(id){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));["design","breed","collection"].forEach(x=>$(x).classList.toggle("hidden",x!==id));if(id==="collection"||id==="breed")refreshAll()}
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
-["body","tail","fins","base","pattern","red","black","position","glitter","shine","eyes","finColor","fishNameInput"].forEach(id=>$(id).addEventListener("input",()=>{current=getSettings();render()}));
-$("save").onclick=()=>{const s={...getSettings(),id:Date.now()+Math.random()};collection.push(s);persist();refreshAll();$("save").textContent="保存しました";setTimeout(()=>$("save").textContent="このメダカを保存",1200)};
-$("random").onclick=()=>{["body","tail","fins","base","pattern","eyes","finColor"].forEach(id=>{$(id).selectedIndex=Math.floor(Math.random()*$(id).options.length)});["red","black","position","glitter","shine"].forEach(id=>$(id).value=Math.floor(Math.random()*101));render()};
-$("reset").onclick=()=>applySettings(defaults);
-$("export").onclick=()=>{const a=document.createElement("a");a.download=(current.name||"medaka")+".png";a.href=$("mainFish").toDataURL("image/png");a.click()};
-function inherit(a,b,key){return Math.random()<.5?a[key]:b[key]}
-function childOf(a,b,i){let c={...defaults};["body","tail","fins","base","pattern","eyes","finColor"].forEach(k=>c[k]=inherit(a,b,k));["red","black","position","glitter","shine"].forEach(k=>{let avg=(Number(a[k])+Number(b[k]))/2;c[k]=Math.max(0,Math.min(100,Math.round(avg+(Math.random()-.5)*30)))});c.name=`F1-${String(i+1).padStart(2,"0")}`;c.id=Date.now()+Math.random();return c}
-function breed(n){const a=collection.find(x=>String(x.id)===$("father").value),b=collection.find(x=>String(x.id)===$("mother").value);if(!a||!b){alert("先にコレクションへ親魚を2匹保存してください。");return}const out=$("offspring");out.innerHTML="";for(let i=0;i<n;i++){const c=childOf(a,b,i);const card=makeCard(c,false),save=document.createElement("button");save.textContent="子供を保存";save.style.marginTop="7px";save.onclick=()=>{collection.push(c);persist();refreshAll();save.textContent="保存済み";save.disabled=true};card.append(save);out.append(card)}}
-$("breedBtn").onclick=()=>breed(5);$("breed10").onclick=()=>breed(10);
-$("clear").onclick=()=>{if(confirm("保存したメダカをすべて削除しますか？")){collection=[];persist();refreshAll()}};
-applySettings(defaults);refreshAll();
-</script></body></html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>創作めだか図鑑 - Medaka Customizer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            background-color: #0d1520;
+            color: #e2e8f0;
+        }
+        .font-serif-ja {
+            font-family: 'Shippori Mincho', serif;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .canvas-container {
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, #112536 0%, #060e17 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xl font-serif-ja font-bold">
+                    鱂
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider font-serif-ja text-teal-100">創作上見めだか工房 <span class="text-xs px-2 py-0.5 rounded bg-teal-950 text-teal-400 border border-teal-800 font-sans ml-2">実写フォト生成 Ver 3.0</span></h1>
+                    <p class="text-xs text-slate-400">上見（見下ろし）観賞用メダカの実写AIフォトジェネレーター</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="btn-toggle-encyclopedia" class="px-4 py-2 text-sm rounded-lg bg-teal-600/20 hover:bg-teal-600/30 text-teal-300 border border-teal-500/40 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span>マイ図鑑 (<span id="encyclopedia-count">0</span>)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left: Control Panel (選択・カスタマイズ) -->
+        <div class="lg:col-span-5 order-2 lg:order-1 flex flex-col space-y-4">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col h-full space-y-5 overflow-y-auto max-h-[750px]">
+                
+                <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-dna text-teal-400"></i> 上見形質カスタマイズ
+                    </h3>
+                    <span class="text-xs text-teal-400">実写生成対応</span>
+                </div>
+
+                <!-- 品種名入力 -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5" for="input-name">
+                        オリジナル品種名
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="input-name" value="幹之三色錦" maxlength="16"
+                            class="w-full bg-slate-950 border border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-xl px-3.5 py-2 text-sm text-white outline-none transition pr-10 font-serif-ja">
+                        <button id="btn-gene-name" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-400 p-1 text-xs" title="銘を銘名する">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 体色選択 -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                        ベース体色
+                    </label>
+                    <div class="grid grid-cols-4 gap-2" id="group-body-color"></div>
+                </div>
+
+                <!-- 柄選択 -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                        体表の柄・錦模様
+                    </label>
+                    <div class="grid grid-cols-3 gap-2" id="group-pattern"></div>
+                </div>
+
+                <!-- 体型選択 -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                        体型（上見シルエット）
+                    </label>
+                    <div class="grid grid-cols-3 gap-2" id="group-body-shape"></div>
+                </div>
+
+                <!-- ヒレ形状 -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                        ヒレタイプ
+                    </label>
+                    <div class="grid grid-cols-2 gap-2" id="group-fin-type"></div>
+                </div>
+
+                <!-- 目のタイプ -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                        目のタイプ
+                    </label>
+                    <div class="grid grid-cols-3 gap-2" id="group-eye-type"></div>
+                </div>
+
+                <!-- スライダーコントロール -->
+                <div class="space-y-4 pt-2 border-t border-slate-800/80">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold text-slate-300">体表多色ラメ密度</label>
+                            <span class="text-xs text-teal-400 font-mono" id="val-lame">60%</span>
+                        </div>
+                        <input type="range" id="slider-lame" min="0" max="100" value="60"
+                            class="w-full accent-teal-500 bg-slate-950 h-2 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold text-slate-300">幹之（みゆき）背筋光強度</label>
+                            <span class="text-xs text-teal-400 font-mono" id="val-light">60%</span>
+                        </div>
+                        <input type="range" id="slider-light" min="0" max="100" value="60"
+                            class="w-full accent-teal-500 bg-slate-950 h-2 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold text-slate-300">ヒレの長くなびく度合い</label>
+                            <span class="text-xs text-teal-400 font-mono" id="val-fin-length">50%</span>
+                        </div>
+                        <input type="range" id="slider-fin-length" min="10" max="100" value="50"
+                            class="w-full accent-teal-500 bg-slate-950 h-2 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right: Photo Display Container -->
+        <div class="lg:col-span-7 order-1 lg:order-2 flex flex-col space-y-4">
+            <div class="canvas-container rounded-2xl border border-slate-800/80 shadow-2xl overflow-hidden aspect-[4/3] w-full flex flex-col justify-between relative group bg-slate-950">
+                
+                <!-- Floating Info Overlay -->
+                <div class="absolute top-4 left-4 z-10 bg-slate-950/70 backdrop-blur-md border border-slate-800/80 rounded-xl p-3 max-w-xs transition-opacity duration-300">
+                    <div class="text-xs text-teal-400 font-mono mb-0.5" id="display-code">MDK-0001</div>
+                    <h2 class="text-lg font-bold font-serif-ja text-white tracking-wide" id="display-name">幹之三色錦</h2>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed line-clamp-2" id="display-short-desc">輝く琥珀色の地に華やかな三色斑が映え、背筋に強烈な幹之光を帯びた上品な個体。</p>
+                </div>
+
+                <!-- Tools Overlay -->
+                <div class="absolute top-4 right-4 z-10 flex space-x-2">
+                    <button id="btn-generate-photo" class="px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-lg flex items-center space-x-1.5 transition">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>実写写真を生成</span>
+                    </button>
+                    <button id="btn-randomize" class="w-9 h-9 rounded-lg bg-slate-900/70 backdrop-blur-md border border-slate-700/60 text-teal-300 hover:text-teal-200 hover:bg-slate-800 transition flex items-center justify-center" title="ランダム生成">
+                        <i class="fa-solid fa-dice"></i>
+                    </button>
+                </div>
+
+                <!-- Photo Display Area -->
+                <div id="photo-viewport" class="w-full h-full relative flex items-center justify-center bg-slate-950 overflow-hidden">
+                    <img id="medaka-photo" src="https://placehold.co/800x600/0f172a/38bdf8?text=Click+%22Generate+Photo%22+for+Realism" alt="Medaka Real Photo" class="w-full h-full object-cover transition-opacity duration-500">
+                    
+                    <!-- Loading Spinner Overlay -->
+                    <div id="photo-loader" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-3 hidden">
+                        <div class="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="text-xs font-medium text-teal-200 animate-pulse font-serif-ja">極上の上見メダカを撮影中...</p>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Panel -->
+                <div class="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-slate-400 bg-slate-950/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800/50">
+                        <i class="fa-solid fa-camera-retro text-teal-400"></i>
+                        <span>AIリアルフォトモード (上見観賞鉢)</span>
+                    </div>
+                    <button id="btn-save-to-book" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-sm shadow-lg shadow-teal-950/50 border border-teal-400/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center space-x-2">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>図鑑に登録する</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Trait Breakdown Info Box -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-wrap gap-2 text-xs">
+                <span class="text-slate-400 w-full mb-1 flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-sliders text-teal-400"></i> 表現形質ステータス：
+                </span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-body-color">体色: 琥珀</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-pattern">柄: 三色</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-body-shape">体型: 普通体型</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-fin">ヒレ: スワロー</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-eye">目: 普通目</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-lame">ラメ: 60%</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700/50" id="tag-light">幹之光: 60%</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Encyclopedia List -->
+    <div id="modal-encyclopedia" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-book-open text-teal-400 text-xl"></i>
+                    <div>
+                        <h3 class="text-lg font-bold font-serif-ja text-white">登録済み創作めだか図鑑</h3>
+                        <p class="text-xs text-slate-400">保存されたオリジナル個体の一覧</p>
+                    </div>
+                </div>
+                <button id="btn-close-modal" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="encyclopedia-grid"></div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-between items-center">
+                <span class="text-xs text-slate-400" id="encyclopedia-summary">全 0 種類登録済み</span>
+                <button id="btn-clear-encyclopedia" class="text-xs text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded bg-rose-950/30 border border-rose-900/50 transition">
+                    図鑑を初期化
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-800 border border-teal-500/50 text-teal-200 px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <i class="fa-solid fa-circle-check text-teal-400 text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">図鑑に登録しました！</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/60 py-3 text-center text-xs text-slate-400">
+        <p>© 創作めだか図鑑 Simulator - 遺伝形質ビジュアルジェネレーター</p>
+    </footer>
+
+    <!-- JavaScript Simulator Engine with Gemini Photo Generation -->
+    <script>
+        const TRAITS = {
+            bodyColors: [
+                { id: 'amber', name: '琥珀 (Amber)', hex: '#d97706', dark: '#78350f' },
+                { id: 'red', name: '朱赤 (Red)', hex: '#ef4444', dark: '#991b1b' },
+                { id: 'black', name: 'オロチ漆黒', hex: '#1e293b', dark: '#020617' },
+                { id: 'white', name: '純白 (White)', hex: '#f8fafc', dark: '#94a3b8' },
+                { id: 'blue', name: '深青/銀', hex: '#0284c7', dark: '#0c4a6e' },
+                { id: 'yellow', name: '黄金 (Gold)', hex: '#eab308', dark: '#854d0e' },
+                { id: 'clear', name: '透明鱗', hex: '#f472b6', dark: '#9d174d' },
+                { id: 'emerald', name: '翡翠', hex: '#059669', dark: '#064e3b' },
+            ],
+            patterns: [
+                { id: 'none', name: '素赤/無地' },
+                { id: 'sancolor', name: '雲州三色' },
+                { id: 'kohaku', name: '紅白' },
+                { id: 'buchi', name: '黒斑/ブチ' },
+                { id: 'sumi', name: '極濃墨斑' },
+            ],
+            bodyShapes: [
+                { id: 'normal', name: '普通体型', length: 1.0, width: 1.0 },
+                { id: 'handaruma', name: '半ダルマ', length: 0.82, width: 1.25 },
+                { id: 'daruma', name: 'ダルマ体型', length: 0.65, width: 1.55 },
+            ],
+            finTypes: [
+                { id: 'normal', name: '普通ヒレ' },
+                { id: 'swallow', name: 'スワロー' },
+                { id: 'long', name: '松井ヒレ長' },
+                { id: 'frill', name: '天女フリル' },
+            ],
+            eyeTypes: [
+                { id: 'normal', name: '普通目', pupil: '#0f172a', iris: '#94a3b8' },
+                { id: 'albino', name: 'アルビノ(赤目)', pupil: '#dc2626', iris: '#fca5a5' },
+                { id: 'black_rim', name: 'ブラックリム', pupil: '#000000', iris: '#334155' }
+            ]
+        };
+
+        const NAME_PREFIX = ['幹之', '雲州', '鳳凰', '極光', '月影', '漆黒', '紅蓮', '翡翠', '天の川', '琥珀', '夜桜', '魔王', '女雛'];
+        const NAME_SUFFIX = ['三色', 'ダルマ', 'ラメ', 'ヒレ長', '錦', 'アルビノ', '直系', 'スワロー', '銀河', '煌'];
+
+        const state = {
+            name: '幹之三色錦',
+            bodyColor: TRAITS.bodyColors[0],
+            pattern: TRAITS.patterns[1],
+            bodyShape: TRAITS.bodyShapes[0],
+            finType: TRAITS.finTypes[0],
+            eyeType: TRAITS.eyeTypes[0],
+            lameDensity: 60,
+            lightIntensity: 60,
+            finLength: 50,
+            currentPhotoUrl: '',
+            encyclopedia: []
+        };
+
+        window.onload = () => {
+            initControls();
+            loadEncyclopedia();
+            updateUI();
+            generateMedakaPhoto();
+        };
+
+        function initControls() {
+            renderButtonOptions('group-body-color', TRAITS.bodyColors, (c) => state.bodyColor = c, item => item.name.split(' ')[0], item => item.hex);
+            renderButtonOptions('group-pattern', TRAITS.patterns, (p) => state.pattern = p, item => item.name.split('/')[0]);
+            renderButtonOptions('group-body-shape', TRAITS.bodyShapes, (s) => state.bodyShape = s, item => item.name);
+            renderButtonOptions('group-fin-type', TRAITS.finTypes, (f) => state.finType = f, item => item.name);
+            renderButtonOptions('group-eye-type', TRAITS.eyeTypes, (e) => state.eyeType = e, item => item.name.split('/')[0]);
+
+            setupSlider('slider-lame', 'val-lame', '%', v => state.lameDensity = v);
+            setupSlider('slider-light', 'val-light', '%', v => state.lightIntensity = v);
+            setupSlider('slider-fin-length', 'val-fin-length', '%', v => state.finLength = v);
+
+            const nameInput = document.getElementById('input-name');
+            nameInput.addEventListener('input', (e) => {
+                state.name = e.target.value || '無題のメダカ';
+                document.getElementById('display-name').innerText = state.name;
+            });
+
+            document.getElementById('btn-gene-name').onclick = generateRandomName;
+            document.getElementById('btn-randomize').onclick = () => {
+                randomizeTraits();
+                generateMedakaPhoto();
+            };
+            document.getElementById('btn-generate-photo').onclick = generateMedakaPhoto;
+            document.getElementById('btn-save-to-book').onclick = saveToEncyclopedia;
+            document.getElementById('btn-toggle-encyclopedia').onclick = openEncyclopedia;
+            document.getElementById('btn-close-modal').onclick = closeEncyclopedia;
+            document.getElementById('btn-clear-encyclopedia').onclick = clearEncyclopedia;
+        }
+
+        function renderButtonOptions(containerId, list, onSelect, getLabel, getBgColor = null) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            list.forEach(item => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'px-2 py-2 rounded-xl text-xs font-medium border transition-all text-center flex items-center justify-center';
+                const label = getLabel(item);
+                if (getBgColor) {
+                    btn.innerHTML = `<span class="w-full py-1 rounded-lg font-bold" style="background:${getBgColor(item)}; color:${isLightColor(getBgColor(item)) ? '#000' : '#fff'}">${label}</span>`;
+                } else {
+                    btn.innerText = label;
+                }
+                btn.onclick = () => {
+                    onSelect(item);
+                    updateUI();
+                    generateMedakaPhoto();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function isLightColor(hex) {
+            if (hex.startsWith('#')) hex = hex.slice(1);
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return (r * 0.299 + g * 0.587 + b * 0.114) > 150;
+        }
+
+        function setupSlider(id, valId, unit, callback) {
+            const slider = document.getElementById(id);
+            const valDisplay = document.getElementById(valId);
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                valDisplay.innerText = val + unit;
+                callback(val);
+            });
+            slider.addEventListener('change', () => {
+                generateMedakaPhoto();
+            });
+        }
+
+        function updateUI() {
+            highlightButtons('group-body-color', TRAITS.bodyColors, state.bodyColor);
+            highlightButtons('group-pattern', TRAITS.patterns, state.pattern);
+            highlightButtons('group-body-shape', TRAITS.bodyShapes, state.bodyShape);
+            highlightButtons('group-fin-type', TRAITS.finTypes, state.finType);
+            highlightButtons('group-eye-type', TRAITS.eyeTypes, state.eyeType);
+
+            document.getElementById('display-name').innerText = state.name;
+            document.getElementById('tag-body-color').innerText = `体色: ${state.bodyColor.name.split(' ')[0]}`;
+            document.getElementById('tag-pattern').innerText = `柄: ${state.pattern.name.split('/')[0]}`;
+            document.getElementById('tag-body-shape').innerText = `体型: ${state.bodyShape.name}`;
+            document.getElementById('tag-fin').innerText = `ヒレ: ${state.finType.name}`;
+            document.getElementById('tag-eye').innerText = `目: ${state.eyeType.name.split('/')[0]}`;
+            document.getElementById('tag-lame').innerText = `ラメ: ${state.lameDensity}%`;
+            document.getElementById('tag-light').innerText = `幹之光: ${state.lightIntensity}%`;
+
+            const desc = `上見観賞用の${state.bodyShape.name}。${state.bodyColor.name.split(' ')[0]}の地に${state.pattern.name.split('/')[0]}が映え、背筋に強烈な幹之光を帯びた個体。`;
+            document.getElementById('display-short-desc').innerText = desc;
+        }
+
+        function highlightButtons(containerId, list, current) {
+            const container = document.getElementById(containerId);
+            Array.from(container.children).forEach((btn, idx) => {
+                const item = list[idx];
+                if (item.id === current.id) {
+                    btn.classList.remove('border-slate-800', 'bg-slate-950/40', 'text-slate-400');
+                    btn.classList.add('border-teal-400', 'bg-teal-950/80', 'text-teal-200', 'ring-2', 'ring-teal-500/30');
+                } else {
+                    btn.classList.remove('border-teal-400', 'bg-teal-950/80', 'text-teal-200', 'ring-2', 'ring-teal-500/30');
+                    btn.classList.add('border-slate-800', 'bg-slate-950/40', 'text-slate-400');
+                }
+            });
+        }
+
+        function generateRandomName() {
+            const p = NAME_PREFIX[Math.floor(Math.random() * NAME_PREFIX.length)];
+            const s = NAME_SUFFIX[Math.floor(Math.random() * NAME_SUFFIX.length)];
+            state.name = p + s;
+            document.getElementById('input-name').value = state.name;
+            document.getElementById('display-name').innerText = state.name;
+        }
+
+        function randomizeTraits() {
+            state.bodyColor = TRAITS.bodyColors[Math.floor(Math.random() * TRAITS.bodyColors.length)];
+            state.pattern = TRAITS.patterns[Math.floor(Math.random() * TRAITS.patterns.length)];
+            state.bodyShape = TRAITS.bodyShapes[Math.floor(Math.random() * TRAITS.bodyShapes.length)];
+            state.finType = TRAITS.finTypes[Math.floor(Math.random() * TRAITS.finTypes.length)];
+            state.eyeType = TRAITS.eyeTypes[Math.floor(Math.random() * TRAITS.eyeTypes.length)];
+            state.lameDensity = Math.floor(Math.random() * 100);
+            state.lightIntensity = Math.floor(Math.random() * 100);
+            state.finLength = Math.floor(Math.random() * 90) + 10;
+
+            document.getElementById('slider-lame').value = state.lameDensity;
+            document.getElementById('val-lame').innerText = state.lameDensity + '%';
+            document.getElementById('slider-light').value = state.lightIntensity;
+            document.getElementById('val-light').innerText = state.lightIntensity + '%';
+            document.getElementById('slider-fin-length').value = state.finLength;
+            document.getElementById('val-fin-length').innerText = state.finLength + '%';
+
+            generateRandomName();
+            updateUI();
+        }
+
+        // --- Real Photo Generation with Gemini API ---
+        async function generateMedakaPhoto() {
+            const loader = document.getElementById('photo-loader');
+            const imgElement = document.getElementById('medaka-photo');
+            loader.classList.remove('hidden');
+
+            const prompt = `A macro high-resolution studio photograph of a top-view ornamental medaka fish (killifish) swimming inside a dark outdoor ceramic breeding bowl (tanuki-bachi). 
+            Traits: 
+            - Body color: ${state.bodyColor.name}
+            - Pattern and markings: ${state.pattern.name}
+            - Body shape: ${state.bodyShape.name} (${state.bodyShape.id === 'daruma' ? 'short stubby round daruma body' : 'standard elegant body'})
+            - Fin type: ${state.finType.name}
+            - Eye type: ${state.eyeType.name}
+            - Multi-color iridescent metallic scales/lame density: ${state.lameDensity}% intensity, glittering multi-color specks on the back
+            - Miyuki dorsal spine light: ${state.lightIntensity}% intensity, glowing electric blue or silver beam running down the dorsal line
+            - Fin length: ${state.finLength}% extended graceful fins
+            Perspective: Top-down view (kami-mi), crystal clear water with natural gentle ripples and water reflections, professional aquarium macro photography, highly detailed scales, studio lighting, 8k resolution.`;
+
+            const payload = {
+                contents: [{
+                    role: 'user',
+                    parts: [{ text: prompt }]
+                }],
+                generationConfig: {
+                    responseModalities: ['IMAGE'],
+                    imageConfig: { aspectRatio: "4:3" }
+                }
+            };
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+            try {
+                let response = null;
+                // Exponential backoff retry loop
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) break;
+                    } catch (err) {
+                        if (attempt === 2) throw err;
+                        await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                
+                if (part && part.inlineData) {
+                    state.currentPhotoUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                    imgElement.src = state.currentPhotoUrl;
+                } else {
+                    throw new Error('Image data not found in response');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('実写写真の生成に失敗しました。再試行してください。');
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // --- Encyclopedia Storage Logic ---
+        function saveToEncyclopedia() {
+            const newItem = {
+                id: 'MDK-' + String(Date.now()).slice(-4),
+                name: state.name,
+                bodyColor: state.bodyColor.name.split(' ')[0],
+                pattern: state.pattern.name.split('/')[0],
+                bodyShape: state.bodyShape.name,
+                finType: state.finType.name,
+                eyeType: state.eyeType.name.split('/')[0],
+                lame: state.lameDensity,
+                light: state.lightIntensity,
+                photoUrl: state.currentPhotoUrl,
+                date: new Date().toLocaleDateString('ja-JP')
+            };
+
+            state.encyclopedia.push(newItem);
+            updateEncyclopediaUI();
+            showToast(`「${state.name}」を図鑑に登録しました`);
+        }
+
+        function loadEncyclopedia() {
+            document.getElementById('encyclopedia-count').innerText = state.encyclopedia.length;
+        }
+
+        function updateEncyclopediaUI() {
+            document.getElementById('encyclopedia-count').innerText = state.encyclopedia.length;
+            document.getElementById('encyclopedia-summary').innerText = `全 ${state.encyclopedia.length} 種類登録済み`;
+
+            const grid = document.getElementById('encyclopedia-grid');
+            grid.innerHTML = '';
+
+            if (state.encyclopedia.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-sm">登録された個体はありません。お気に入りの実写めだかを登録してみましょう。</div>`;
+                return;
+            }
+
+            state.encyclopedia.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-teal-500/50 transition';
+                card.innerHTML = `
+                    ${item.photoUrl ? `<div class="w-full h-36 bg-slate-900 overflow-hidden"><img src="${item.photoUrl}" class="w-full h-full object-cover"></div>` : ''}
+                    <div class="p-4 flex flex-col justify-between flex-grow">
+                        <div>
+                            <div class="flex justify-between items-center text-xs text-teal-400 font-mono mb-1">
+                                <span>${item.id}</span>
+                                <span class="text-slate-500">${item.date}</span>
+                            </div>
+                            <h4 class="text-base font-bold text-white font-serif-ja mb-2">${item.name}</h4>
+                            <div class="flex flex-wrap gap-1 text-[11px] text-slate-300">
+                                <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">${item.bodyColor}</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">${item.pattern}</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">${item.bodyShape}</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-900 flex justify-end">
+                            <button onclick="removeEncyclopediaItem(${idx})" class="text-xs text-rose-400 hover:text-rose-300 transition">削除</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function removeEncyclopediaItem(idx) {
+            state.encyclopedia.splice(idx, 1);
+            updateEncyclopediaUI();
+        }
+
+        function clearEncyclopedia() {
+            state.encyclopedia = [];
+            updateEncyclopediaUI();
+            showToast('図鑑を初期化しました');
+        }
