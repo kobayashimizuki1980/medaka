@@ -1,0 +1,46 @@
+/* 画面全体 */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+/* 全体の横並び */
+.container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* 左側メニュー */
+.sidebar {
+    width: 30%;
+    background: #285477;
+    color: white;
+    padding: 20px;
+}
+
+/* 右側全体 */
+.right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* 右上 */
+.top {
+    flex: 1;
+    background: #438B75;
+    padding: 20px;
+}
+
+/* 右下 */
+.bottom {
+    flex: 1;
+    background: #B17A45;
+    padding: 20px;
+}
